@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1: Introduction"
-author: "Max Hermanson "
+author: "Student Name"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -23,23 +23,20 @@ The completed exercise is due on <>.
 1. What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
 
 > Answer: 
-Data Analytics: I have taken an Intro to Computer Programming course that focused on Python. Am an experienced excel user. 
-R: ENV 710 w/ Betsy this past Fall. Before that, I had to teach myself how to use R in order to handle an extremely large survey dataset. Self-teaching was NOT fun but people on the internet were very helpful when I posted my problems. 
-Git: None. Had never heard of it before. 
 
 2. Are there any components of the course about which you feel confident?
 
-> Answer: I feel good about the basics of R, thanks to Betsy. 
+> Answer: 
 
 3. Are there any components of the course about which you feel apprehensive?
 
-> Answer: the variety of packages and their different sub-languages can be very confusing. For example, the '=' sign's usage in different packages doesn't make sense to me. The python course I previously took was by no means easy, but everything ultimately felt very logical,  solveable, and consistent. With R, troubleshooting is extrememly frustrating for me. I also hate the names of the different packages and some of their commands; they sound weird and consuing, and aren't usually intuitive. I also wish we could just use an '=' sign instead of '<-' ? In summary: despite spending the entirety of last semester learning R, I still felt like a beginner/intermediate at the end of the course because of how difficult troubleshooting problems could be. I felt overly reliant on re-using code that Betsy had providded us. 
+> Answer: 
 
 
 ## 2) GitHub
 
 Provide a link below to your forked course repository in GitHub. Make sure you have pulled all recent changes from the course repository  and that you have updated your course README file. 
 
-> Answer: https://github.com/maxhermanson/Environmental_Data_Analytics_2021
+> Answer: 
 
 
