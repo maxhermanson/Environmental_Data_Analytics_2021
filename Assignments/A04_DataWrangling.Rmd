@@ -1,6 +1,6 @@
 ---
 title: "Assignment 4: Data Wrangling"
-author: "Student Name"
+author: "Max Hermanson "
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -25,6 +25,44 @@ The completed exercise is due on Tuesday, Feb 16 @ 11:59pm.
 
 ```{r, message = FALSE}
 #1
+getwd()
+library(tidyverse)
+library(lubridate)
+ozone18 <- read.csv("../Data/Raw/EPAair_O3_NC2018_raw.csv", stringsAsFactors = TRUE)
+ozone19 <- read.csv("../Data/Raw/EPAair_O3_NC2019_raw.csv", stringsAsFactors = TRUE)
+PM18 <- read.csv("../Data/Raw/EPAair_PM25_NC2018_raw.csv", stringsAsFactors = TRUE)
+PM19 <- read.csv("../Data/Raw/EPAair_PM25_NC2019_raw.csv", stringsAsFactors = TRUE)
+
+#view(ozone18)
+colnames(ozone18)
+str(ozone18)
+dim(ozone18)
+summary(ozone18)
+class(ozone18$Date)
+
+
+#view(ozone19)
+colnames(ozone19)
+str(ozone19)
+dim(ozone19)
+class(ozone19$Date)
+summary(ozone19)
+
+
+#view(PM18)
+colnames(PM18)
+str(PM18)
+dim(PM18)
+class(PM18$Date)
+summary(PM18)
+
+
+#view(PM19)
+colnames(PM19)
+str(PM19)
+dim(PM19)
+class(PM19$Date)
+summary(PM19)
 
 #2
 ```
@@ -37,12 +75,40 @@ The completed exercise is due on Tuesday, Feb 16 @ 11:59pm.
 
 ```{r}
 #3
+ozone18_fixed_date <- mdy(ozone18$Date)    # why doesn't this work? 
+ozone18$Date <- as.Date(ozone18$Date, format = "%m/%d/%Y")
+ozone19$Date <- as.Date(ozone19$Date, format = "%m/%d/%Y")
+PM18$Date <- as.Date(PM18$Date, format = "%m/%d/%Y")
+PM19$Date <- as.Date(PM19$Date, format = "%m/%d/%Y")
+
 
 #4
 
+ozone19_new <- ozone19 %>% 
+  select(Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+ozone18_new <- ozone18 %>% 
+  select(Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+PM18new <- PM18 %>% 
+  select(Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE) 
+PM19new <- PM19 %>% 
+  select(Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE) 
 #5
+PM18new$AQS_PARAMETER_DESC<- PM18new$AQS_PARAMETER_DESC[1:8983] <- "PM2.5"
+PM18new$AQS_PARAMETER_DESC
 
-#6
+PM19new$AQS_PARAMETER_DESC<- PM19new$AQS_PARAMETER_DESC[1:8581] <- "PM2.5"
+PM19new$AQS_PARAMETER_DESC
+
+#test123 <- function(aqs_desc){
+ # ifelse(aqs_desc != "PM2.5", print("PM2.5"), print("PM2.5"))
+#}
+
+#6 
+write.csv(ozone18_new, "../Data/Processed/EPAair_O3_NC2018_processed.csv")
+write.csv(ozone19_new,  "../Data/Processed/EPAair_O3_NC2019_processed.csv")
+write.csv(PM18new,  "../Data/Processed/EPAair_PM25_NC2018_processed.csv")
+write.csv(PM19new,  "../Data/Processed/EPAair_PM25_NC2019_processed.csv")
+
 
 ```
 
@@ -62,15 +128,32 @@ The completed exercise is due on Tuesday, Feb 16 @ 11:59pm.
 
 ```{r}
 #7
+#colnames(ozone18_new)
+#colnames(ozone19_new)
+#colnames(PM18new)
+#colnames(PM19new)
+ozonePM <- rbind(ozone18_new, ozone19_new, PM18new, PM19new)
+
+intersect(ozone18_new, ozone19_new, PM18new, PM19new) 
+intersect(ozone18_new$Site.Name, ozone19_new$Site.Name, PM18new$Site.Name, PM19new$Site.Name) # does not work.... 
 
 #8
-
+ozonePM_subset <- ozonePM %>% 
+  filter(Site.Name == "Linville Falls" | Site.Name =="Durham Armory"|Site.Name == "Leggett"| Site.Name =="Hattie Avenue"|Site.Name == "Clemmons Middle"| Site.Name =="Mendenhall School"| Site.Name =="Frying Pan Mountain"| Site.Name =="West Johnston Co."| Site.Name =="Garinger High School"|Site.Name =="Castle Hayne"|Site.Name == "Pitt Agri. Center"|Site.Name == "Bryson City"| Site.Name =="Millbrook School" ) %>% 
+  group_by(Date, Site.Name, AQS_PARAMETER_DESC, COUNTY) %>% 
+  filter(! is.na(DAILY_AQI_VALUE) & !is.na(SITE_LATITUDE) & !is.na(SITE_LONGITUDE)) %>% 
+  summarise(meanAQI = mean(DAILY_AQI_VALUE),
+            meanLatitude = mean(SITE_LATITUDE),
+            meanLongitude = mean(SITE_LONGITUDE)) %>% 
+  mutate(month = month(Date)) %>% 
+  mutate(year = year(Date))
 #9
-
+unique(ozonePM_subset$Site.Name)
+ozonePM_wider <- pivot_wider(ozonePM_subset, names_from = AQS_PARAMETER_DESC, values_from = meanAQI)
 #10
-
+dim(ozonePM_wider)
 #11
-
+write.csv(ozonePM_wider,  "../Data/Processed/EPAair_O3_PM25_NC1718_Processed.csv")
 ```
 
 
@@ -81,13 +164,27 @@ The completed exercise is due on Tuesday, Feb 16 @ 11:59pm.
 
 ```{r}
 #12a
+ozonePM_summary <- ozonePM_wider %>%
+  group_by(Site.Name, month, year) %>% 
+  summarise(meanOzone = mean(Ozone),
+            meanPM25 = mean(PM2.5)) %>% 
+  drop_na(month, year)
+ozonePM_summary
+
+ozonePM_summary2 <- ozonePM_wider %>%
+  group_by(Site.Name, month, year) %>% 
+  summarise(meanOzone = mean(Ozone),
+            meanPM25 = mean(PM2.5)) %>% 
+  na.omit(month, year)
+ozonePM_summary2
 
 #12b
 
 #13
-
+dim(ozonePM_summary)
+dim(ozonePM_summary2)
 ```
 
 14. Why did we use the function `drop_na` rather than `na.omit`?
 
-> Answer: 
+> Answer: na.omit omits ALL of the NA's and does not exlcude month/year from its omission. 
