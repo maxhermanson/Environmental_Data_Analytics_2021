@@ -75,8 +75,8 @@ summary(PM19)
 
 ```{r}
 #3
-ozone18_fixed_date <- mdy(ozone18$Date)    # why doesn't this work? 
-ozone18$Date <- as.Date(ozone18$Date, format = "%m/%d/%Y")
+ozone18_fixed_date <- mdy(ozone18$Date)    # why doesn't this work? # this line not part of homework solution 
+ozone18$Date <- as.Date(ozone18$Date, format = "%m/%d/%Y") #use this code 
 ozone19$Date <- as.Date(ozone19$Date, format = "%m/%d/%Y")
 PM18$Date <- as.Date(PM18$Date, format = "%m/%d/%Y")
 PM19$Date <- as.Date(PM19$Date, format = "%m/%d/%Y")
