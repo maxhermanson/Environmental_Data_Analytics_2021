@@ -134,8 +134,8 @@ write.csv(PM19new,  "../Data/Processed/EPAair_PM25_NC2019_processed.csv")
 #colnames(PM19new)
 ozonePM <- rbind(ozone18_new, ozone19_new, PM18new, PM19new)
 
-intersect(ozone18_new, ozone19_new, PM18new, PM19new) 
-intersect(ozone18_new$Site.Name, ozone19_new$Site.Name, PM18new$Site.Name, PM19new$Site.Name) # does not work.... 
+#intersect(ozone18_new, ozone19_new, PM18new, PM19new)                # could not tell if we were supposed to use intersect, or if it was recommended.         
+#intersect(ozone18_new$Site.Name, ozone19_new$Site.Name, PM18new$Site.Name, PM19new$Site.Name)        # does not work.... 
 
 #8
 ozonePM_subset <- ozonePM %>% 
