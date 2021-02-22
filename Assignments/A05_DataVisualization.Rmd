@@ -1,0 +1,160 @@
+---
+title: "Assignment 5: Data Visualization"
+author: "Max Hermanson"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
+---
+
+## OVERVIEW
+
+This exercise accompanies the lessons in Environmental Data Analytics on Data Visualization 
+
+## Directions
+1. Change "Student Name" on line 3 (above) with your name.
+2. Work through the steps, **creating code and output** that fulfill each instruction.
+3. Be sure to **answer the questions** in this assignment document.
+4. When you have completed the assignment, **Knit** the text and code into a single PDF file.
+5. After Knitting, submit the completed exercise (PDF file) to the dropbox in Sakai. Add your last name into the file name (e.g., "Fay_A05_DataVisualization.Rmd") prior to submission.
+
+The completed exercise is due on Tuesday, February 23 at 11:59 pm.
+
+
+
+## Set up your session 
+1. Set up your session. Verify your working directory and load the tidyverse 
+and cowplot packages. Upload the NTL-LTER processed data files for nutrients 
+and chemistry/physics for Peter and Paul Lakes (both the tidy 
+[`NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv`] and the gathered
+[`NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv`] versions) and 
+the processed data file for the Niwot Ridge litter dataset. 
+
+2. Make sure R is reading dates as date format; if not change the format to date.
+
+```{r}
+#1 
+library(cowplot)
+library(tidyverse)
+library(ggridges)
+
+#2 
+getwd()
+
+lake_processed <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv") 
+lake_gathered <- read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
+litter.df <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
+
+```
+## Define your theme
+3. Build a theme and set it as your default theme.
+
+```{r}
+
+maxsTheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "top")
+
+#theme_set(maxsTheme)
+
+
+```
+
+## Create graphs
+For numbers 4-7, create ggplot graphs and adjust aesthetics to follow best practices for data visualization. Ensure your theme, color palettes, axes, and additional aesthetics are edited accordingly.
+
+4. [NTL-LTER] Plot total phosphorus (`tp_ug`) by phosphate (`po4`), with separate aesthetics for Peter and Paul lakes. Add a line of best fit and color it black. Adjust your axes to hide extreme values.
+
+```{r}
+phosphorus_scatter <- ggplot(lake_processed,aes(x= tp_ug, y=po4))+
+         geom_point(aes(color = lakename))+
+  maxsTheme+
+  xlab("Total Phosphorus")+
+  ylab("Phosphate Concentration")+
+  geom_smooth(method=lm, color = "black")+
+  ylim(0,50)+
+  labs(lakename = "Lake Name:") #cant get to work 
+print(phosphorus_scatter)  
+
+
+
+
+phosphorus_dot <- ggplot(lake_processed,aes(x= tp_ug, y=po4))+
+         geom_dotplot(aes(color = lakename), binaxis = "y", binwidth = 1 , stackdir = "center", position = "dodge", dotsize = 1)+
+  maxsTheme+
+  xlab("Total Phosphorus")+
+  ylab("Phosphate Concentration")+
+  ylim(0,100)
+print(phosphorus_dot)  
+
+#my choice 
+phosphorus_violin <- ggplot(lake_processed,aes(x= tp_ug, y=po4, fill = lakename))+
+  geom_violin()+
+  ylim(0,50)+
+  facet_wrap(vars(lakename), nrow = 1)+
+  xlab("Total Phosphorus")+
+  ylab("Phosphate Concentration")+
+  maxsTheme
+print(phosphorus_violin)
+
+
+```
+
+
+5. [NTL-LTER] Make three separate boxplots of (a) temperature, (b) TP, and (c) TN, with month as the x axis and lake as a color aesthetic. Then, create a cowplot that combines the three graphs. Make sure that only one legend is present and that graph axes are aligned.
+
+```{r}
+temp_box <- ggplot(lake_processed, aes(x = month, y = temperature_C))+
+  geom_boxplot(aes(color = as.factor(month)))+
+  xlab("Month")+
+  ylab("Temperature C")
+  
+print(temp_box)
+  
+TP_box <- ggplot(lake_processed, aes(x = month, y = tp_ug))+
+  geom_boxplot(aes(color = as.factor(month)))+
+  xlab("Month")+
+  ylab("Total Phosphorus")
+  
+  
+print(TP_box)
+
+TN_box <- ggplot(lake_processed, aes(x = month, y = tn_ug))+
+  geom_boxplot(aes(color = as.factor(month)))+
+  ylim(0, 3000)+
+  xlab("Month")+
+  ylab("Total Nitrogen")
+  
+
+print(TN_box)
+
+
+combined_cow <- plot_grid(temp_box, TP_box, TN_box, nrow = 3, align = 'h', rel_heights = c(0.75, 1, 1))
+print(combined_cow)
+
+ggsave("./Output/A05_cowplot.png", combined_cow, dpi = 300)
+
+
+facet_wrap(vars(lakename), nrow = 1)+
+  xlab("Total Phosphorus")+
+  ylab("Phosphate Concentration")+
+
+
+```
+
+Question: What do you observe about the variables of interest over seasons and between lakes? 
+
+> Answer: 
+
+6. [Niwot Ridge] Plot a subset of the litter dataset by displaying only the "Needles" functional group. Plot the dry mass of needle litter by date and separate by NLCD class with a color aesthetic. (no need to adjust the name of each land use)
+
+7. [Niwot Ridge] Now, plot the same plot but with NLCD classes separated into three facets rather than separated by color. 
+
+```{r}
+# Dry mass = Y axis, Collect Date = X-Axis? > facet wrap problem: make sure you use vars command 
+# Faced grid, more than 1 variable 
+# Facet wrap, 
+```
+Question: Which of these plots (6 vs. 7) do you think is more effective, and why? 
+
+> Answer:
