@@ -73,7 +73,7 @@ phosphorus_scatter <- ggplot(lake_processed,aes(x= tp_ug, y=po4))+
   ylab("Phosphate Concentration")+
   geom_smooth(method=lm, color = "black")+
   ylim(0,50)+
-  labs(lakename = "Lake Name:") #cant get to work 
+  labs(lakename = "Lake Name:") #cant get legend title channge to work 
 print(phosphorus_scatter)  
 
 
@@ -104,47 +104,48 @@ print(phosphorus_violin)
 5. [NTL-LTER] Make three separate boxplots of (a) temperature, (b) TP, and (c) TN, with month as the x axis and lake as a color aesthetic. Then, create a cowplot that combines the three graphs. Make sure that only one legend is present and that graph axes are aligned.
 
 ```{r}
-temp_box <- ggplot(lake_processed, aes(x = month, y = temperature_C))+
-  geom_boxplot(aes(color = as.factor(month)))+
+temp_box <- ggplot(lake_processed, aes(x = as.factor(month), y = temperature_C))+
+  geom_boxplot(aes(fill = lakename ))+
   xlab("Month")+
-  ylab("Temperature C")
+  ylab("Temperature C")+
+  scale_x_discrete("month")
   
 print(temp_box)
   
-TP_box <- ggplot(lake_processed, aes(x = month, y = tp_ug))+
-  geom_boxplot(aes(color = as.factor(month)))+
+TP_box <- ggplot(lake_processed, aes(x = as.factor(month), y = tp_ug))+
+  geom_boxplot(aes(fill = lakename))+
   xlab("Month")+
-  ylab("Total Phosphorus")
+  ylab("Total Phosphorus")+
+  scale_x_discrete("month")+
+  ylim(0,100)
   
   
 print(TP_box)
 
-TN_box <- ggplot(lake_processed, aes(x = month, y = tn_ug))+
-  geom_boxplot(aes(color = as.factor(month)))+
-  ylim(0, 3000)+
+TN_box <- ggplot(lake_processed, aes(x = as.factor(month), y = tn_ug))+
+  geom_boxplot(aes(fill = lakename))+
+  ylim(0, 1000)+
   xlab("Month")+
-  ylab("Total Nitrogen")
+  ylab("Total Nitrogen")+
+  scale_x_discrete("month")+
+  
   
 
 print(TN_box)
 
-
+library(cowplot)
 combined_cow <- plot_grid(temp_box, TP_box, TN_box, nrow = 3, align = 'h', rel_heights = c(0.75, 1, 1))
 print(combined_cow)
 
 ggsave("./Output/A05_cowplot.png", combined_cow, dpi = 300)
 
 
-facet_wrap(vars(lakename), nrow = 1)+
-  xlab("Total Phosphorus")+
-  ylab("Phosphate Concentration")+
-
-
+  
 ```
 
 Question: What do you observe about the variables of interest over seasons and between lakes? 
 
-> Answer: 
+> Answer: temperature varies most and is highest during summer months, whereas temperature is lowest and most constant during winter months. The temperature is very similar between the two lakes. Total P reaches its peak in september and remains relatively constant in other months for both Paul and Peter Lake. Paul Lake had lower total P than Peter Lake every month. Trends in total nitrogen (TN): Peter Lake had higher TN levels than Paul Lake. THe only other discernabile trend in the TN data was that TN gradually increased in Peter Lake from May to October, and then sharply dropped. 
 
 6. [Niwot Ridge] Plot a subset of the litter dataset by displaying only the "Needles" functional group. Plot the dry mass of needle litter by date and separate by NLCD class with a color aesthetic. (no need to adjust the name of each land use)
 
@@ -154,7 +155,32 @@ Question: What do you observe about the variables of interest over seasons and b
 # Dry mass = Y axis, Collect Date = X-Axis? > facet wrap problem: make sure you use vars command 
 # Faced grid, more than 1 variable 
 # Facet wrap, 
+litter.df_needles <- litter.df %>% 
+  filter(functionalGroup == "Needles")
+
+needle_plot <- ggplot(litter.df_needles, aes(x= collectDate, y = dryMass))+
+  geom_point(aes(color = nlcdClass))+
+  theme(axis.text.x=element_text(angle = 45, hjust = 1 ))+
+  xlab("Date of Collection")+
+  ylab("Dry Mass (g)")
+needle_plot
+
+needle_plot2 <- ggplot(litter.df_needles, aes(x= collectDate, y = dryMass))+
+  geom_point(aes(color = nlcdClass))+
+  theme(axis.text.x=element_text(angle = 45, hjust = 1 ))+
+  xlab("Date of Collection")+
+  ylab("Dry Mass (g)")+
+  facet_wrap(vars(nlcdClass), nrow = 3)+
+  labs(nlcdClass = "Legend")
+needle_plot2
+
+#example_plot <- ggplot(df, aes(x= variable2, y=variable3))+
+ # geom_point()
+  #facet_wrap(vars(variable1), nrow = 3)+
+#example_plot + labs(variable1 = "Legend")
+
+
 ```
 Question: Which of these plots (6 vs. 7) do you think is more effective, and why? 
 
-> Answer:
+> Answer: Plot 7. There were far too many (overlapping) data points in Plot 6 to effectively discern patterns/differences between the nlcd classes. The facet approach allows for easier comparison of similarities and differences at each individual date and across time across NLCD classes, AND makes it easier to examine trends within individual nlcd classes. 
