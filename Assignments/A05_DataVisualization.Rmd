@@ -33,17 +33,16 @@ the processed data file for the Niwot Ridge litter dataset.
 2. Make sure R is reading dates as date format; if not change the format to date.
 
 ```{r}
-#1 
 library(cowplot)
 library(tidyverse)
 library(ggridges)
 
-#2 
+ 
 getwd()
 
-lake_processed <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv") 
-lake_gathered <- read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
-litter.df <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
+lake_processed <- read.csv("../Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv") 
+lake_gathered <- read.csv("../Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
+litter.df <- read.csv("../Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
 
 class(lake_processed)
 
@@ -136,10 +135,10 @@ TN_box <- ggplot(lake_processed, aes(x = as.factor(month), y = tn_ug))+
 print(TN_box)
 
 library(cowplot)
-combined_cow <- plot_grid(temp_box, TP_box, TN_box, nrow = 3, align = 'h', rel_heights = c(0.75, 1, 1))
+combined_cow <- plot_grid(temp_box+theme(legend.position="none"), TP_box+theme(legend.position = "none" ), TN_box+theme(legend.position = "bottom"), nrow = 3, align = 'h', rel_heights = c(0.75, 1, 1))
 print(combined_cow)
 
-ggsave("./Output/A05_cowplot.png", combined_cow, dpi = 300)
+ggsave("../Output/A05_cowplot.png", combined_cow, dpi = 300)
 
 
   
