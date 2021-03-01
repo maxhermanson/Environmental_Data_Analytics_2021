@@ -1,6 +1,10 @@
 ---
 title: "Assignment 2: Coding Basics"
+<<<<<<< HEAD
 author: "Max Hermanson "
+=======
+author: "Student Name"
+>>>>>>> 51cde3a2ab3ab7ade34cb8f398b19630d942ece2
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -28,6 +32,7 @@ This exercise accompanies the lessons in Environmental Data Analytics on coding 
 
 3. Ask R to determine whether the mean is greater than the median. 
 
+<<<<<<< HEAD
 4. Insert comments in your code to describe what you are doing. 
 
 ```{r}
@@ -48,6 +53,17 @@ mean_vs_median <- function(mean_sequence1){
   else {print("false")}
 }
 mean_vs_median
+=======
+4. Insert comments in your code to describe what you are doing.
+
+```{r}
+#1. 
+
+#2. 
+
+#3. 
+
+>>>>>>> 51cde3a2ab3ab7ade34cb8f398b19630d942ece2
 ```
 
 ## Basics Day 2
@@ -62,6 +78,7 @@ mean_vs_median
 
 ```{r}
 
+<<<<<<< HEAD
 
 
 name_student <- c("Max", "Maria", "Joe", "Timor")
@@ -116,6 +133,8 @@ pass_fail <- function(x){
 }
 tester <- pass_fail(Test_Score)
 tester
+=======
+>>>>>>> 51cde3a2ab3ab7ade34cb8f398b19630d942ece2
 ```
 
 9. QUESTION: How is this data frame different from a matrix?

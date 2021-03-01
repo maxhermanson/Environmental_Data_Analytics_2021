@@ -1,6 +1,10 @@
 ---
 title: "Assignment 4: Data Wrangling"
+<<<<<<< HEAD
 author: "Max Hermanson "
+=======
+author: "Student Name"
+>>>>>>> 51cde3a2ab3ab7ade34cb8f398b19630d942ece2
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -25,6 +29,7 @@ The completed exercise is due on Tuesday, Feb 16 @ 11:59pm.
 
 ```{r, message = FALSE}
 #1
+
 getwd()
 library(tidyverse)
 library(lubridate)
@@ -64,6 +69,7 @@ dim(PM19)
 class(PM19$Date)
 summary(PM19)
 
+
 #2
 ```
 
@@ -75,6 +81,7 @@ summary(PM19)
 
 ```{r}
 #3
+
 ozone18_fixed_date <- mdy(ozone18$Date)    # why doesn't this work? # this line not part of homework solution 
 ozone18$Date <- as.Date(ozone18$Date, format = "%m/%d/%Y") #use this code 
 ozone19$Date <- as.Date(ozone19$Date, format = "%m/%d/%Y")
@@ -110,6 +117,8 @@ write.csv(PM18new,  "../Data/Processed/EPAair_PM25_NC2018_processed.csv")
 write.csv(PM19new,  "../Data/Processed/EPAair_PM25_NC2019_processed.csv")
 
 
+
+
 ```
 
 
@@ -128,6 +137,7 @@ write.csv(PM19new,  "../Data/Processed/EPAair_PM25_NC2019_processed.csv")
 
 ```{r}
 #7
+
 #colnames(ozone18_new)
 #colnames(ozone19_new)
 #colnames(PM18new)
@@ -154,6 +164,7 @@ ozonePM_wider <- pivot_wider(ozonePM_subset, names_from = AQS_PARAMETER_DESC, va
 dim(ozonePM_wider)
 #11
 write.csv(ozonePM_wider,  "../Data/Processed/EPAair_O3_PM25_NC1718_Processed.csv")
+
 ```
 
 
@@ -164,6 +175,7 @@ write.csv(ozonePM_wider,  "../Data/Processed/EPAair_O3_PM25_NC1718_Processed.csv
 
 ```{r}
 #12a
+
 ozonePM_summary <- ozonePM_wider %>%
   group_by(Site.Name, month, year) %>% 
   summarise(meanOzone = mean(Ozone),
@@ -178,13 +190,20 @@ ozonePM_summary2 <- ozonePM_wider %>%
   na.omit(month, year)
 ozonePM_summary2
 
+
+
 #12b
 
 #13
+
 dim(ozonePM_summary)
 dim(ozonePM_summary2)
+
 ```
 
 14. Why did we use the function `drop_na` rather than `na.omit`?
 
 > Answer: na.omit omits ALL of the NA's and does not exlcude month/year from its omission. 
+=======
+> Answer: 
+>>>>>>> 51cde3a2ab3ab7ade34cb8f398b19630d942ece2
