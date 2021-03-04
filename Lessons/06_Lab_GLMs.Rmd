@@ -22,6 +22,11 @@ library(agricolae)
 
 PeterPaul.chem.nutrients <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
 # Set date to date format
+
+
+
+
+
 PeterPaul.chem.nutrients$sampledate <- as.Date(PeterPaul.chem.nutrients$sampledate, format = "%Y-%m-%d")
 
 EPAair <- read.csv("./Data/Processed/EPAair_O3_PM25_NC1819_Processed.csv", stringsAsFactors = TRUE)
@@ -162,12 +167,16 @@ For the NTL-LTER dataset, can we predict PM2.5 from Ozone?
 ```{r}
 
 #Exercise 3: Run a linear regression PM2.5 by Ozone. Find the p-value and R-squared value. 
+inclass_reg <- lm(data = EPAair, PM2.5 ~  Ozone)
+summary(inclass_reg)
 
-
+          #pvalue of fstat: <0.05  ; R2 = .1316
 
 #Exercise 4: Build a scatterplot. Add a line and standard error for the linear regression. Add the regression equation to the plot
-
-
+scatter_inclass <- ggplot(EPAair, aes(x=Ozone, y=PM2.5))+
+  geom_point()+
+  geom_smooth(method=lm, color = "blue")
+print(scatter_inclass)
 
 ```
 
@@ -179,17 +188,31 @@ What other variables can we add to improve model?
 ```{r}
 
 #Exercise 5: Build correlation plots and identify more possible explanatory variables to add to the regression.
+library(corrplot)
+corrplot_inclass <- 
+  EPAair %>%
+  select(SITE_LATITUDE:PM2.5) %>%
+  na.omit()
+corrplot_inclass2 <- cor(corrplot_inclass)
 
+corrplot(corrplot_inclass2, method = "ellipse")
+corrplot.mixed(corrplot_inclass2, upper = "ellipse")
 
 
 
 #Exercise 6: Choose a model by AIC in a Stepwise Algorithm. Do the results from AIC match the variables you selected on Exercise 5?
-
+AIC_inclass <- lm(data = corrplot_inclass, PM2.5 ~ SITE_LATITUDE + SITE_LONGITUDE + Month + Year + Ozone)   #should i use this or the next one below "AIC_lakevars2"  ?? 
+step(AIC_inclass)
 
 
 
 #Exercise 7: Run another regression using the variables selected on Exercise 6. Compare r-squared value withthe one from Exercise 5. 
+AIC_inclass2 <- lm(data = corrplot_inclass, PM2.5 ~ SITE_LATITUDE + SITE_LONGITUDE + Month + Ozone)
+summary(AIC_inclass2)
 
+
+#R2 = .1926; fstat p value < 0.05 
+# the r2 in this model is greater than the other
 ```
 
 

@@ -1,6 +1,6 @@
 ---
 title: "Assignment 7: GLMs (Linear Regressios, ANOVA, & t-tests)"
-author: "Student Name"
+author: "Max Hermanson"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -27,10 +27,19 @@ The completed exercise is due on Tuesday, March 2 at 1:00 pm.
 
 ```{r setup}
 #1
+library(tidyverse)
+#install.packages("agricolae")
+library(agricolae)
+library(ggridges)
+library(lubridate)
 
+lakechem.df <- read.csv("../Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv", stringsAsFactors = TRUE)
 
 #2
-
+maxstheme2 <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "top")
+theme_set(maxstheme2)
 
 ```
 
@@ -39,8 +48,8 @@ Our first research question is: Does mean lake temperature recorded during July 
 
 3. State the null and alternative hypotheses for this question:
 > Answer:
-H0: 
-Ha: 
+H0: mean lake temperature does not change with depth across lakes 
+Ha: mean lake temperature changes with depth across different lakes. 
 
 
 4.  Wrangle your NTL-LTER dataset with a pipe function so that the records meet the following criteria: 
@@ -52,7 +61,28 @@ Ha:
 
 ```{r scatterplot}
 #4
+lakechem.df$sampledate <- as.Date(lakechem.df$sampledate, format = "%m/%d/%Y")
 
+#lakechem.df2 <- mutate(lakechem.df, month=month(sampledate))
+
+lakechem.filtered <- lakechem.df %>% 
+  mutate(lakechem.df, month=month(sampledate)) %>% 
+  filter(month == 7) %>% 
+  select(lakename, year4, daynum, depth, temperature_C) %>% 
+  na.omit()
+
+unique(lakechem.filtered$month)   #verify only July was filtered for 
+
+regress_lakes <- ggplot(lakechem.filtered, aes(x=depth, y= temperature_C))+
+  geom_point(aes(color = lakename))+
+  xlab("Depth (m)")+
+  ylab("Temperature (C)")+
+  ylim(0,35)+
+  geom_smooth(method=lm, color = "black")+
+  theme(legend.position = "bottom")+
+  ggtitle("Temp vs. Depth Regression")
+  
+print(regress_lakes)
 
 #5
 
@@ -62,21 +92,29 @@ Ha:
 
 6. Interpret the figure. What does it suggest with regards to the response of temperature to depth? Do the distribution of points suggest about anything about the linearity of this trend?
 
-> Answer: 
+> Answer: There is a clear moderate negative correlation between temperature and depth. The distribution of points indicate this is a non-linear model, based on their curviture. An inverse logistic function would be a more appropriate estimation of their relationship, and the model's equation should be modified to account for this. 
 
 
 7. Perform a linear regression to test the relationship and display the results
 
 ```{r linear.regression}
 #7
+regression_1 <- lm(lakechem.filtered$temperature_C ~ lakechem.filtered$depth)
 
+par(mfrow = c(2,2), mar=c(4,4,4,4)) #displays all 4 graphs at once 
+plot(regression_1)
+par(mfrow = c(1,1)) # this cycles you through individual graphs
+
+#depth_temp_reg <- lm(data = lakechem.filtered, temperature_C ~ depth)
+
+summary(regression_1)
 
 ```
 
 
 8. Interpret your model results in words. Include how much of the variability in temperature is explained by changes in depth, the degrees of freedom on which this finding is based, and the statistical significance of the result. Also mention how much temperature is predicted to change for every 1m change in depth. 
 
-> Answer:
+> Answer:  R2 = 0.7387 (74% of the variance in temperature can be explained by depth); df = 9726; p value of fstat < 0.05; for every 1m increase in depth, temperature falls by 1.94621 degrees C (p <0.05). 
 
 
 ---
@@ -91,17 +129,49 @@ Let's tackle a similar question from a different approach. Here, we want to expl
 
 ```{r temperature.model}
 #9
+#create new filtered dataframe that includes all 12 explanatory variables. 
+#lakechem.filtered_2 <- lakechem.df %>%     
+#  mutate(lakechem.df, month=month(sampledate)) %>% 
+#  filter(month == 7) %>% 
+#  filter(lakeid %in% c("L", "R", "T", "E")) %>% 
+#  drop_na(dissolvedOxygen, irradianceWater, irradianceDeck, lakeid)
+#filtered with only year4, daynum, depth
+lakechem.filtered3 <- lakechem.df %>% 
+  mutate(lakechem.df, month=month(sampledate)) %>% 
+  filter(month == 7) %>% 
+  filter(lakeid %in% c("L", "R", "T", "E")) %>%    # filter for LTRE North Temperate Lakes 
+  drop_na( lakeid, depth, lakename, year4, temperature_C) %>% 
+  select(lakeid, lakename, year4, daynum, depth, temperature_C) %>% 
+  na.omit()
 
+unique(lakechem.filtered3$lakeid)   #verification
+unique(lakechem.df$lakeid)
 
+#AIC_lakevars <- lm(data = lakechem.filtered_2, temperature_C ~ year4 + daynum + depth)   #should i use this or the next one below "AIC_lakevars2"  ?? 
+#step(AIC_lakevars)
+
+#AIC_lakevars2 <- lm(data = lakechem.filtered_2, temperature_C ~ year4 + daynum + depth + dissolvedOxygen + irradianceWater + irradianceDeck)
+#step(AIC_lakevars2)
+
+AIC_lakevars3 <- lm(data = lakechem.filtered3, temperature_C ~ year4 + daynum + depth) 
+step(AIC_lakevars3)
 
 #10
+multiReg_lake <- lm(data = lakechem.filtered3, temperature_C ~ daynum + depth)
+summary(multiReg_lake)
 
+par(mfrow = c(2,2), mar=c(4,4,4,4)) #displays all 4 graphs at once 
+plot(multiReg_lake)
 
+par(mfrow = c(1,1))
 ```
 
 11. What is the final set of explanatory variables that the AIC method suggests we use to predict temperature in our multiple regression? How much of the observed variance does this model explain? Is this an improvement over the model using only depth as the explanatory variable?
 
-> Answer: 
+> Answer: R2 = 0.755 (76% of the variance in temperature can be explained by the explanatory variables); df = 4564; p value of fstat <0.05; for every 1m increase in depth, temperature falls by 1.99 degrees celcius. The higher R2 value is an improvement from the model that just used Depth (original r2 = 74%); the fstat holds and all of the individual explanatory variable coefficients are significant (p<0.05). 
+
+
+
 
 
 
@@ -112,13 +182,36 @@ Let's tackle a similar question from a different approach. Here, we want to expl
 
 ```{r anova.model}
 #12
+#test normality of each different lake population's temperature 
+#use shaprio test, 
+#histograms
+#bartlett test for equal variance 
 
+#summary stats 
+library(agricolae)
+library(htmltools)
+unique(lakechem.filtered3$lakename) # test 
+laketemp.df <- lakechem.filtered3 %>% 
+  group_by(lakename) %>% 
+  summarise(avgtemp = mean(temperature_C))
 
+summary(laketemp.df)
+
+#ANOVA with aov 
+lake.anova <- aov(data = lakechem.filtered3, temperature_C ~ lakename)
+summary(lake.anova)
+
+#lm 
+lake.anova.lm <- lm(formula = temperature_C ~ lakename, data = lakechem.filtered3)
+summary(lake.anova.lm)
+par(mfrow = c(2,2), mar=c(4,4,4,4)) #displays all 4 graphs at once 
+plot(lake.anova.lm)
+par(mfrow = c(1,1))
 ```
 
 13. Is there a significant difference in mean temperature among the lakes? Report your findings. 
 
-> Answer: 
+> Answer: based on the p-value of the ANOVA test being less than 0.05, there is strong evidence to support there is a significant difference in means among the lakes. This also suggests variance within each subpopulation (each lake) may not be great. 
 
 
 
@@ -126,26 +219,39 @@ Let's tackle a similar question from a different approach. Here, we want to expl
 
 ```{r scatterplot.2}
 #14.
+depth_graph <- ggplot(lakechem.filtered3, aes(x= depth, y=temperature_C , color = lakename))+
+  geom_point(aes(alpha= 0.5))+
+  geom_smooth(method = "lm", se = FALSE)+
+  ylim(0,35)+
+  xlab("Depth (m)")+
+  ylab("Temperature (C)")+
+  theme(legend.position = "bottom")+
+  ggtitle("Temp vs. Depth Regression")
+  
+  
 
 
+print(depth_graph)
 ```
 
 15. Use the Tukey's HSD test to determine which lakes have different means.
 
 ```{r tukey.test}
 #15
+TukeyHSD(lake.anova) 
 
-
+comparison_ABC <- HSD.test(lake.anova, "lakename", group=TRUE)
+comparison_ABC
 ```
 
 16.From the findings above, which lakes have the same mean temperature, statistically speaking, as Peter Lake? Does any lake have a mean temperature that is statistically distinct from all the other lakes?
 
->Answer:
+>Answer: Paul and Peter lakes have the same mean temperatures (diff = 0.49, p value > 0.05). Both Tuesday and East Long lakes have mean temperatures statistically distinct from all of the other lakes based on examination of the p-values of the Tukey test. Both of these lakes rejected the null in comparisons with the other three lakes. 
 
  
 
 17. If we were just looking at Peter Lake and Paul Lake. What's another test we might explore to see whether they have distinct mean temperatures? 
 
->Answer: 
+>Answer: an indepedent samples t-test or Welch's two-sample test could be used to compare the mean temperatures of these lakes. 
 
 

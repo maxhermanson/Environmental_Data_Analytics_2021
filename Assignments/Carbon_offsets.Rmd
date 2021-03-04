@@ -1,0 +1,178 @@
+---
+title: "Carbon Offset"
+author: "Max Hermanson"
+date: "3/3/2021"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cars}
+raw.acr.df <- read.csv("../Data/Raw/ACR_all_data.csv", stringsAsFactors = TRUE)
+raw.acr.df$Date.Issued <- as.Date(raw.acr.df$Date.Issued, format = "%m/%d/%Y")
+str(raw.acr.df)
+
+raw.climateactionreserve.df <- read.csv("./Data/Raw/ClimateActionReserve_database.csv", stringsAsFactors = TRUE)
+raw.climateactionreserve.df$Status.Effective<- as.Date(raw.climateactionreserve.df$Status.Effective, format = "%m/%d/%Y")
+str(raw.acr.df)
+
+```
+
+
+```{r     ACR }
+#jpmorgan
+JPMorgan <- grep("JPMorgan", raw.acr.df$Retirement.Reason.Details)
+JPMorgan
+
+raw.acr.df$Retirement.Reason.Details[grep("JPMorgan", raw.acr.df$Retirement.Reason.Details)]
+
+JPMorgan_filter <- slice(raw.acr.df, JPMorgan)
+JPMorgan_filter
+
+#misc. 
+Bank <- grep("Bank", raw.acr.df$Retirement.Reason.Details)
+Bank
+
+raw.acr.df$Retirement.Reason.Details[grep("Bank", raw.acr.df$Retirement.Reason.Details)]
+
+Bank_filter <- slice(raw.acr.df, Bank)
+Bank_filter
+
+# wells fargo 
+Wells <- grep("Wells", raw.acr.df$Retirement.Reason.Details)
+Wells
+
+raw.acr.df$Retirement.Reason.Details[grep("Wells", raw.acr.df$Retirement.Reason.Details)]
+
+Wells_filter <- slice(raw.acr.df, Wells)
+Wells_filter
+
+# Citi group 
+Citi <- grep("Citi", raw.acr.df$Retirement.Reason.Details)
+Citi
+
+raw.acr.df$Retirement.Reason.Details[grep("Citi", raw.acr.df$Retirement.Reason.Details)]
+
+Citi_filter <- slice(raw.acr.df, Citi)
+Citi_filter
+
+#Bank of NY mellon
+mellon <- grep("Mellon", raw.acr.df$Retirement.Reason.Details)
+mellon
+
+raw.acr.df$Retirement.Reason.Details[grep("Mellon", raw.acr.df$Retirement.Reason.Details)]
+
+mellon_filter <- slice(raw.acr.df, mellon)
+mellon_filter
+
+#MorganStanley
+MorganStanley <- grep("Morgan Stanley", raw.acr.df$Retirement.Reason.Details)
+MorganStanley
+
+raw.acr.df$Retirement.Reason.Details[grep("Morgan Stanley", raw.acr.df$Retirement.Reason.Details)]
+
+MorganStanley_filter <- slice(raw.acr.df, MorganStanley)
+MorganStanley_filter
+Stanley <- grep("Stanley", raw.acr.df$Retirement.Reason.Details)
+Stanley
+
+raw.acr.df$Retirement.Reason.Details[grep("Stanley", raw.acr.df$Retirement.Reason.Details)]
+
+Stanley_filter <- slice(raw.acr.df, Stanley)
+Stanley_filter
+
+#State St 
+StateSt <- grep("State St", raw.acr.df$Retirement.Reason.Details)
+StateSt
+
+raw.acr.df$Retirement.Reason.Details[grep("State St", raw.acr.df$Retirement.Reason.Details)]
+
+StateSt_filter <- slice(raw.acr.df, StateSt)
+StateSt_filter
+
+all.banks.df <- merge(JPMorgan_filter, Bank_filter, Citi_filter, by = c("Status.Effective"))
+```
+```{r Climate Action Reserve}
+#jpmorgan
+JPMorgan <- grep("JPMorgan", raw.climateactionreserve.df$Retirement.Reason.Details)
+JPMorgan
+
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("JPMorgan", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+JPMorgan_filter <- slice(raw.climateactionreserve.df, JPMorgan)
+JPMorgan_filter
+
+#misc. 
+Bank <- grep("Bank", raw.climateactionreserve.df$Retirement.Reason.Details)
+Bank
+
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("Bank", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+Bank_filter <- slice(raw.climateactionreserve.df, Bank)
+Bank_filter
+
+# wells fargo 
+Wells <- grep("Wells", raw.climateactionreserve.df$Retirement.Reason.Details)
+Wells
+
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("Wells", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+Wells_filter <- slice(raw.climateactionreserve.df, Wells)
+Wells_filter
+
+# Citi group 
+Citi <- grep("Citi", raw.climateactionreserve.df$Retirement.Reason.Details)
+Citi
+
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("Citi", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+Citi_filter <- slice(raw.climateactionreserve.df, Citi)
+Citi_filter
+
+#Bank of NY mellon
+mellon <- grep("Mellon", raw.climateactionreserve.df$Retirement.Reason.Details)
+mellon
+
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("Mellon", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+mellon_filter <- slice(raw.climateactionreserve.df, mellon)
+mellon_filter
+
+#MorganStanley
+MorganStanley <- grep("Morgan Stanley", raw.climateactionreserve.df$Retirement.Reason.Details)
+MorganStanley
+
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("Morgan Stanley", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+MorganStanley_filter <- slice(raw.climateactionreserve.df, MorganStanley)
+MorganStanley_filter
+Stanley <- grep("Stanley", raw.climateactionreserve.df$Retirement.Reason.Details)
+Stanley
+
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("Stanley", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+Stanley_filter <- slice(raw.climateactionreserve.df, Stanley)
+Stanley_filter
+
+#State St 
+StateSt <- grep("State St", raw.climateactionreserve.df$Retirement.Reason.Details)
+StateSt
+
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("State St", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+StateSt_filter <- slice(raw.climateactionreserve.df, StateSt)
+StateSt_filter
+
+all.banks.df <- merge(JPMorgan_filter, Bank_filter, Citi_filter, by = c("Status.Effective"))
+
+
+``` 
+
+
+
+

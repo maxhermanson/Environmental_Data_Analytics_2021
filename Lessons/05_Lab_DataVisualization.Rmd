@@ -1,6 +1,6 @@
 ---
 title: "5: Lab - Data Visualization Basics"
-author: "Environmental Data Analytics | John Fay and Luana Lima | Developed by Kateri Salk"
+author: "Max Hermanson"
 date: "Spring 2021"
 output: pdf_document
 geometry: margin=2.54cm
