@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r cars}
-raw.acr.df <- read.csv("../Data/Raw/ACR_all_data.csv", stringsAsFactors = TRUE)
+raw.acr.df <- read.csv("./Data/Raw/ACR_all_data.csv", stringsAsFactors = TRUE)
 raw.acr.df$Date.Issued <- as.Date(raw.acr.df$Date.Issued, format = "%m/%d/%Y")
 str(raw.acr.df)
 
@@ -21,10 +21,33 @@ raw.climateactionreserve.df <- read.csv("./Data/Raw/ClimateActionReserve_databas
 raw.climateactionreserve.df$Status.Effective<- as.Date(raw.climateactionreserve.df$Status.Effective, format = "%m/%d/%Y")
 str(raw.acr.df)
 
+raw.goldstandard <- read.csv("./Data/Raw/GSF Registry Credits Export 2021-03-04.csv", stringsAsFactors = TRUE)
+raw.goldstandard$Retirement.Date <- as.Date(raw.goldstandard$Retirement.Date, format = "%Y/%m/%d")
+str(raw.goldstandard)
+
+raw.VCS_verra <- read.csv("./Data/Raw/VerifiedCarbonStd_Registry_Data.csv", stringsAsFactors = TRUE)
+
+str(raw.acr.df)
+
 ```
 
 
 ```{r     ACR }
+JPMorgan_filter2 <- filter(raw.VCS_verra, grepl("JPMorgan", Proponent))
+JPMorgan_ACR <- filter(raw.acr.df, grepl("JPMorgan", Retirement.Reason.Details))
+Bank_ACR <- filter( grepl("Bank", Retirement.Reason.Details))
+Citi_ACR <- filter(raw.acr.df, grepl("Citi", Retirement.Reason.Details))
+Wells_ACR <- filter(raw.acr.df, grepl("Wells", Retirement.Reason.Details))
+Goldman_ACR <- filter(raw.acr.df, grepl("Goldman", Retirement.Reason.Details))
+StateSt_ACR <- filter(raw.acr.df, grepl("State St", Retirement.Reason.Details))
+MorganStanley_ACR <- filter(raw.acr.df, grepl("Stanley", Retirement.Reason.Details))
+Mellon_ACR <- filter(raw.acr.df, grepl("Mellon", Retirement.Reason.Details))
+
+banks_VCS_all <- rbind(JPMorgan_filter2, Bank_filter2, Citi_filter2, Wells_filter2, Goldman_filter2, StateSt_filter2, MorganStanley_filter2, Mellon_filter2)
+
+
+
+
 #jpmorgan
 JPMorgan <- grep("JPMorgan", raw.acr.df$Retirement.Reason.Details)
 JPMorgan
@@ -95,9 +118,29 @@ raw.acr.df$Retirement.Reason.Details[grep("State St", raw.acr.df$Retirement.Reas
 StateSt_filter <- slice(raw.acr.df, StateSt)
 StateSt_filter
 
-all.banks.df <- merge(JPMorgan_filter, Bank_filter, Citi_filter, by = c("Status.Effective"))
-```
+#Goldman Sachs
+Goldman <- grep("Sachs", raw.acr.df$Retirement.Reason.Details)
+Goldman
+
+raw.acr.df$Retirement.Reason.Details[grep("Sachs", raw.acr.df$Retirement.Reason.Details)]
+
+Goldman_filter <- slice(raw.acr.df, StateSt)
+Goldman_filter
+
+all.banks.df <- merge(JPMorgan_filter, Bank_filter, Citi_filter, by = c("Sachs"))
+``` 
 ```{r Climate Action Reserve}
+JPMorgan_CAR <- filter(raw.climateactionreserve.df, grepl("JPMorgan", Retirement.Reason.Details, useBytes = TRUE))
+Bank_ACR <- filter( grepl("Bank", Retirement.Reason.Details))
+Citi_ACR <- filter(raw.acr.df, grepl("Citi", Retirement.Reason.Details))
+Wells_ACR <- filter(raw.acr.df, grepl("Wells", Retirement.Reason.Details))
+Goldman_ACR <- filter(raw.acr.df, grepl("Goldman", Retirement.Reason.Details))
+StateSt_ACR <- filter(raw.acr.df, grepl("State St", Retirement.Reason.Details))
+MorganStanley_ACR <- filter(raw.acr.df, grepl("Stanley", Retirement.Reason.Details))
+Mellon_ACR <- filter(raw.acr.df, grepl("Mellon", Retirement.Reason.Details))
+
+
+
 #jpmorgan
 JPMorgan <- grep("JPMorgan", raw.climateactionreserve.df$Retirement.Reason.Details)
 JPMorgan
@@ -170,9 +213,205 @@ StateSt_filter
 
 all.banks.df <- merge(JPMorgan_filter, Bank_filter, Citi_filter, by = c("Status.Effective"))
 
+#Goldman Sachs
+Goldman <- grep("Goldman", raw.climateactionreserve.df$Retirement.Reason.Details)
+Goldman
 
+raw.climateactionreserve.df$Retirement.Reason.Details[grep("Sachs", raw.climateactionreserve.df$Retirement.Reason.Details)]
+
+Goldman_filter <- slice(raw.climateactionreserve.df, StateSt)
+Goldman_filter
+
+all.banks.df <- merge(JPMorgan_filter, Bank_filter, Citi_filter, by = c("Sachs"))
 ``` 
+```{r Gold Standard}
+JPMorgan_GS <- filter(raw.goldstandard, grepl("JPMorgan", Note))
+
+
+Bank_ACR <- filter( grepl("Bank", Retirement.Reason.Details))
+#jpmorgan
+JPMorgan <- grep("JPMorgan", raw.goldstandard$Note)
+JPMorgan
+
+raw.goldstandard$Note[grep("JPMorgan", raw.goldstandard$Note)]
+
+JPMorgan_filter <- slice(raw.goldstandard, JPMorgan)
+JPMorgan_filter
+
+#misc. 
+Bank <- grep("Bank", raw.goldstandard$Note)
+Bank
+raw.goldstandard$Note[grep("Bank", raw.goldstandard$Note)]
+
+Bank_filter <- slice(raw.goldstandard, Bank)
+Bank_filter
+
+# wells fargo 
+Wells <- grep("Wells", raw.goldstandard$Note)
+Wells
+
+raw.goldstandard$Note[grep("Wells", raw.goldstandard$Note)]
+
+Wells_filter <- slice(raw.goldstandard, Wells)
+Wells_filter
+
+# Citi group 
+Citi <- grep("Citi", raw.goldstandard$Note)
+Citi
+
+raw.goldstandard$Note[grep("Citi", raw.goldstandard$Note)]
+
+Citi_filter <- slice(raw.goldstandard, Citi)
+Citi_filter
+
+#Bank of NY mellon
+mellon <- grep("Mellon", raw.goldstandard$Note)
+mellon
+
+raw.goldstandard$Note[grep("Mellon", raw.goldstandard$Note)]
+
+mellon_filter <- slice(raw.goldstandard, mellon)
+mellon_filter
+
+#MorganStanley
+MorganStanley <- grep("Morgan Stanley", raw.goldstandard$Note)
+MorganStanley
+
+raw.goldstandard$Note[grep("Morgan Stanley", raw.goldstandard$Note)]
+
+MorganStanley_filter <- slice(raw.goldstandard, MorganStanley)
+MorganStanley_filter
+
+Stanley <- grep("Stanley", raw.goldstandard$Note)
+Stanley
+
+raw.goldstandard$Note[grep("Stanley", raw.goldstandard$Note)]
+
+Stanley_filter <- slice(raw.goldstandard, Stanley)
+Stanley_filter
+
+#State St 
+StateSt <- grep("State St", raw.goldstandard$Note)
+StateSt
+
+raw.goldstandard$Note[grep("State St", raw.goldstandard$Note)]
+
+StateSt_filter <- slice(raw.goldstandard, StateSt)
+StateSt_filter
 
 
 
+#Goldman Sachs
+Goldman <- grep("Goldman", raw.goldstandard$Note)
+Goldman
+
+raw.goldstandard$Note[grep("Sachs", raw.goldstandard$Note)]
+
+Goldman_filter <- slice(raw.goldstandard, Goldman)
+Goldman_filter
+
+
+all.banks.df <- merge(JPMorgan_filter, Bank_filter, Citi_filter, by = c("Status.Effective"))
+
+
+```
+
+```{r Verified Carbon Standard by Verra VCS}
+
+JPMorgan_filter2 <- filter(raw.VCS_verra, grepl("JPMorgan", Proponent))
+Bank_filter2 <- filter( grepl("Bank", Proponent))
+Citi_filter2 <- filter(raw.VCS_verra, grepl("Citi", Proponent))
+Wells_filter2 <- filter(raw.VCS_verra, grepl("Wells", Proponent))
+Goldman_filter2 <- filter(raw.VCS_verra, grepl("Goldman", Proponent))
+StateSt_filter2 <- filter(raw.VCS_verra, grepl("State St", Proponent))
+MorganStanley_filter2 <- filter(raw.VCS_verra, grepl("Stanley", Proponent))
+Mellon_filter2 <- filter(raw.VCS_verra, grepl("Mellon", Proponent))
+
+banks_VCS_all <- rbind(JPMorgan_filter2, Bank_filter2, Citi_filter2, Wells_filter2, Goldman_filter2, StateSt_filter2, MorganStanley_filter2, Mellon_filter2)
+
+
+#jpmorgan
+JPMorgan <- grep("JPMorgan", raw.VCS_verra$Proponent)
+JPMorgan
+
+raw.VCS_verra$Proponent[grep("JPMorgan", raw.VCS_verra$Proponent)]
+
+JPMorgan_filter <- slice(raw.VCS_verra$Proponent, JPMorgan)
+JPMorgan_filter
+
+JPMorgan_filter2 <- filter(raw.VCS_verra, grepl("JPMorgan", Proponent))
+
+
+#misc. 
+Bank <- grep("Bank", raw.VCS_verra$Proponent)
+Bank
+
+raw.VCS_verra$Proponent[grep("Bank", raw.VCS_verra$Proponent)]
+
+Bank_filter <- slice(raw.acr.df, Bank)
+Bank_filter
+
+# wells fargo 
+Wells <- grep("Wells", raw.VCS_verra$Proponent)
+Wells
+
+raw.acr.df$Retirement.Reason.Details[grep("Wells", raw.acr.df$Retirement.Reason.Details)]
+
+Wells_filter <- slice(raw.acr.df, Wells)
+Wells_filter
+
+# Citi group 
+Citi <- grep("Citi", raw.VCS_verra$Proponent)
+Citi
+raw.VCS_verra$Proponent[grep("Citi", raw.VCS_verra$Proponent)]
+
+Citi_filter <- slice(raw.acr.df, Citi)
+Citi_filter
+
+#Bank of NY mellon
+mellon <- grep("Mellon", raw.VCS_verra$Proponent)
+mellon
+
+raw.acr.df$Retirement.Reason.Details[grep("Mellon", raw.acr.df$Retirement.Reason.Details)]
+
+mellon_filter <- slice(raw.acr.df, mellon)
+mellon_filter
+
+#MorganStanley
+MorganStanley <- grep("Morgan Stanley", raw.VCS_verra$Proponent)
+MorganStanley
+
+raw.acr.df$Retirement.Reason.Details[grep("Morgan Stanley", raw.acr.df$Retirement.Reason.Details)]
+
+MorganStanley_filter <- slice(raw.acr.df, MorganStanley)
+MorganStanley_filter
+Stanley <- grep("Stanley", raw.acr.df$Retirement.Reason.Details)
+Stanley
+
+raw.acr.df$Retirement.Reason.Details[grep("Stanley", raw.acr.df$Retirement.Reason.Details)]
+
+Stanley_filter <- slice(raw.acr.df, Stanley)
+Stanley_filter
+
+#State St 
+StateSt <- grep("State St", raw.VCS_verra$Proponent)
+StateSt
+
+raw.acr.df$Retirement.Reason.Details[grep("State St", raw.acr.df$Retirement.Reason.Details)]
+
+StateSt_filter <- slice(raw.acr.df, StateSt)
+StateSt_filter
+
+#Goldman Sachs
+Goldman <- grep("Sachs", raw.VCS_verra$Proponent)
+Goldman
+
+raw.acr.df$Retirement.Reason.Details[grep("Sachs", raw.acr.df$Retirement.Reason.Details)]
+
+Goldman_filter <- slice(raw.acr.df, StateSt)
+Goldman_filter
+
+
+
+```
 

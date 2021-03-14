@@ -1,0 +1,106 @@
+---
+title: "Carbon Offset"
+author: "Max Hermanson"
+date: "3/3/2021"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cars}
+library(tidyverse)
+
+raw.acr.df <- read.csv("./Data/Raw/ACR_all_data.csv", stringsAsFactors = TRUE)
+raw.acr.df$Date.Issued <- as.Date(raw.acr.df$Date.Issued, format = "%m/%d/%Y")
+str(raw.acr.df)
+
+raw.climateactionreserve.df <- read.csv("./Data/Raw/ClimateActionReserve_database.csv", stringsAsFactors = TRUE)
+raw.climateactionreserve.df$Status.Effective<- as.Date(raw.climateactionreserve.df$Status.Effective, format = "%m/%d/%Y")
+str(raw.acr.df)
+
+raw.goldstandard <- read.csv("./Data/Raw/GSF Registry Credits Export 2021-03-04.csv", stringsAsFactors = TRUE)
+raw.goldstandard$Retirement.Date <- as.Date(raw.goldstandard$Retirement.Date, format = "%Y/%m/%d")
+str(raw.goldstandard)
+
+raw.VCS_verra <- read.csv("./Data/Raw/VerifiedCarbonStd_Registry_Data.csv", stringsAsFactors = TRUE)
+
+str(raw.acr.df)
+
+```
+
+
+```{r     ACR   DONE }
+
+JPMorgan_ACR <- filter(raw.acr.df, grepl("JPMorgan", Retirement.Reason.Details, useBytes = TRUE))
+Bank_ACR <- filter(raw.acr.df, grepl("Bank", Retirement.Reason.Details, useBytes = TRUE))
+Citi_ACR <- filter(raw.acr.df, grepl("Citi", Retirement.Reason.Details, useBytes = TRUE))
+Wells_ACR <- filter(raw.acr.df, grepl("Wells", Retirement.Reason.Details, useBytes = TRUE))
+Goldman_ACR <- filter(raw.acr.df, grepl("Goldman", Retirement.Reason.Details, useBytes = TRUE))
+StateSt_ACR <- filter(raw.acr.df, grepl("State St", Retirement.Reason.Details, useBytes = TRUE))
+MorganStanley_ACR <- filter(raw.acr.df, grepl("Stanley", Retirement.Reason.Details, useBytes = TRUE))
+Mellon_ACR <- filter(raw.acr.df, grepl("Mellon", Retirement.Reason.Details, useBytes = TRUE))
+
+banks_ACR_all <- rbind(JPMorgan_ACR, Bank_ACR, Citi_ACR, Wells_ACR, Goldman_ACR, StateSt_ACR, MorganStanley_ACR, Mellon_ACR)
+
+
+``` 
+```{r Climate Action Reserve DONE}
+JPMorgan_CAR <- filter(raw.climateactionreserve.df, grepl("JPMorgan", Retirement.Reason.Details, useBytes = TRUE))
+Bank_CAR<- filter(raw.climateactionreserve.df, grepl("Bank", Retirement.Reason.Details, useBytes = TRUE))
+Citi_CAR <- filter(raw.climateactionreserve.df, grepl("Citi", Retirement.Reason.Details, useBytes = TRUE))
+Wells_CAR <- filter(raw.climateactionreserve.df, grepl("Wells", Retirement.Reason.Details, useBytes = TRUE))
+Goldman_CAR <- filter(raw.climateactionreserve.df, grepl("Goldman", Retirement.Reason.Details, useBytes = TRUE))
+StateSt_CAR <- filter(raw.climateactionreserve.df, grepl("State St", Retirement.Reason.Details, useBytes = TRUE))
+MorganStanley_CAR <- filter(raw.climateactionreserve.df, grepl("Stanley", Retirement.Reason.Details, useBytes = TRUE))
+Mellon_CAR <- filter(raw.climateactionreserve.df, grepl("Mellon", Retirement.Reason.Details, useBytes = TRUE))
+
+banks_CAR_all <- rbind(JPMorgan_CAR, Bank_CAR, Citi_CAR, Wells_CAR, Goldman_CAR, StateSt_CAR, MorganStanley_CAR, Mellon_CAR)
+
+
+``` 
+```{r Gold Standard DONE }
+JPMorgan_Gold <- filter(raw.goldstandard, grepl("JPMorgan", Note, useBytes = TRUE))
+Bank_Gold<- filter(raw.goldstandard, grepl("Bank", Note, useBytes = TRUE))
+Citi_Gold <- filter(raw.goldstandard, grepl("Citi", Note, useBytes = TRUE))
+Wells_Gold <- filter(raw.goldstandard, grepl("Wells", Note, useBytes = TRUE))                   
+Goldman_Gold <- filter(raw.goldstandard, grepl("Goldman", Note, useBytes = TRUE))
+StateSt_Gold <- filter(raw.goldstandard, grepl("State St", Note, useBytes = TRUE))
+MorganStanley_Gold <- filter(raw.goldstandard, grepl("Stanley", Note, useBytes = TRUE))
+Mellon_Gold <- filter(raw.goldstandard, grepl("Mellon", Note, useBytes = TRUE))
+
+banks_Gold_all <- rbind(JPMorgan_Gold, Bank_Gold, Citi_Gold, Wells_Gold, Goldman_Gold, StateSt_Gold, MorganStanley_Gold, Mellon_Gold)
+
+
+```
+```{r Verified Carbon Standard by Verra VCS    DONE}
+
+JPMorgan_filter2 <- filter(raw.VCS_verra, grepl("JPMorgan", Proponent))
+Bank_filter2 <- filter(raw.VCS_verra, grepl("Bank", Proponent))
+Citi_filter2 <- filter(raw.VCS_verra, grepl("Citi", Proponent))
+Wells_filter2 <- filter(raw.VCS_verra, grepl("Wells", Proponent))
+Goldman_filter2 <- filter(raw.VCS_verra, grepl("Goldman", Proponent))
+StateSt_filter2 <- filter(raw.VCS_verra, grepl("State St", Proponent))
+MorganStanley_filter2 <- filter(raw.VCS_verra, grepl("Stanley", Proponent))
+Mellon_filter2 <- filter(raw.VCS_verra, grepl("Mellon", Proponent))
+
+banks_VCS_all <- rbind(JPMorgan_filter2, Bank_filter2, Citi_filter2, Wells_filter2, Goldman_filter2, StateSt_filter2, MorganStanley_filter2, Mellon_filter2)
+
+
+```
+```{r Output}
+ACR_output <- write.csv(banks_ACR_all,  "./Data/Processed/banks_ACR_all.csv")
+CAR_output <- write.csv(banks_CAR_all,  "./Data/Processed/banks_CAR_all.csv")
+Goldstd_output <- write.csv(banks_Gold_all,  "./Data/Processed/banks_Gold_all.csv")
+VCS_output <- write.csv(banks_VCS_all,  "./Data/Processed/banks_VCS_all.csv")
+
+
+banks_CAR_all
+banks_Gold_all
+banks_ACR_all
+
+```
