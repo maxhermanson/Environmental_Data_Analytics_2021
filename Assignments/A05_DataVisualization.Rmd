@@ -40,9 +40,9 @@ library(lubridate)
  
 getwd()
 
-lake_processed <- read.csv("../Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv") 
-lake_gathered <- read.csv("../Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
-litter.df <- read.csv("../Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
+lake_processed <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv") 
+lake_gathered <- read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
+litter.df <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
 
 class(lake_processed)
 
