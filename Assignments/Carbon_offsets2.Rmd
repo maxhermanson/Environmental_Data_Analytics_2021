@@ -14,6 +14,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r cars}
 library(tidyverse)
+library(lubridate)
+library(zoo)
+library(trend)
+library(Kendall)
 
 raw.acr.df <- read.csv("./Data/Raw/ACR_all_data.csv", stringsAsFactors = TRUE)
 raw.acr.df$Date.Issued <- as.Date(raw.acr.df$Date.Issued, format = "%m/%d/%Y")
@@ -28,14 +32,162 @@ raw.goldstandard$Retirement.Date <- as.Date(raw.goldstandard$Retirement.Date, fo
 str(raw.goldstandard)
 
 raw.VCS_verra <- read.csv("./Data/Raw/VerifiedCarbonStd_Registry_Data.csv", stringsAsFactors = TRUE)
+raw.VCS_verra_dates <- read.csv("./Data/Raw/vcus3.csv", stringsAsFactors = TRUE)
 
 str(raw.acr.df)
 
 ```
+```{r JPMorgan}
+#ACR
+list1 <- 1:11
+list2 <- rep("American Carbon Reserve")
+list3 <- cbind(list2, list1 )
+JPMorgan_ACR <- filter(raw.acr.df, grepl("JPMorgan", Retirement.Reason.Details, useBytes = TRUE))
+JPMorgan_ACR$Purchased_Offsets <- JPMorgan_ACR$Quantity.of.Credits 
+JPMorgan_ACR$Registry <- JPMorgan_ACR$list3
+#CAR
+JPMorgan_CAR <- filter(raw.climateactionreserve.df, grepl("JPMorgan", Retirement.Reason.Details, useBytes = TRUE))
+#Gold
+JPMorgan_Gold <- filter(raw.goldstandard, grepl("JPMorgan", Note, useBytes = TRUE))
+#VCS
+vcs1 <- 1:4
+vcs2 <- rep("Verified Carbon Standard")
+vcs3 <- cbind(vcs2, vcs1 )
+JPMorgan_VCS <- filter(raw.VCS_verra_dates, grepl("JPMorgan", Proponent))
+JPMorgan_VCS$Purchased_Offsets <- JPMorgan_VCS$Estimated.Annual.Emission.Reductions
+JPMorgan_VCS_Final <- cbind (JPMorgan_VCS, vcs3)
+JPMorgan_VCS_Final <- select(JPMorgan_VCS_Final, vcs2)
+#All
+JPMorgan_All_Registries <- merge(JPMorgan_ACR$Purchased_Offsets, JPMorgan_VCS_Final$Purchased_Offsets,  )
 
 
-```{r     ACR   DONE }
 
+
+JPMorgan_ACR$Status.Effective <- as.Date(JPMorgan_ACR$Status.Effective, format = "%m/%d/%Y")
+JPMorgan_ACR_pipe <- JPMorgan_ACR %>% 
+  mutate(JPMorgan_ACR, year=year(Status.Effective)) #%>% 
+  #group_by(year) #%>% 
+  #summarise(Avg = sum(Purchased_Offsets))
+JPMorgan_ACR_pipe
+
+JPMorgan_VCS_pipe <- JPMorgan_VCS %>% 
+  summarise(Avg = sum(Estimated.Annual.Emission.Reductions))
+JPMorgan_VCS_pipe
+
+#OUtput Table
+ACRtable <- JPMorgan_ACR_pipe %>% 
+  filter(year== 2020) %>% 
+  select(Account.Holder, Quantity.of.Credits, Project.Name) 
+
+sum(ACRtable$Quantity.of.Credits)
+```
+
+```{r BoA }
+#HITS
+Bank_ACR <- filter(raw.acr.df, grepl("Bank", Retirement.Reason.Details, useBytes = TRUE))
+Bank_ACR2 <- filter(raw.acr.df, grepl("America", Retirement.Reason.Details, useBytes = TRUE))
+Bank_ACR3 <- filter(raw.acr.df, grepl("Merrill", Retirement.Reason.Details, useBytes = TRUE))
+Bank_ACR4 <- filter(raw.acr.df, grepl("Bank of America", Retirement.Reason.Details, useBytes = TRUE))
+
+#no hits
+Bank_CAR<- filter(raw.climateactionreserve.df, grepl("Bank", Retirement.Reason.Details, useBytes = TRUE))
+Bank_CAR2<- filter(raw.climateactionreserve.df, grepl("Bank of America", Retirement.Reason.Details, useBytes = TRUE))
+Bank_CAR3<- filter(raw.climateactionreserve.df, grepl("America", Retirement.Reason.Details, useBytes = TRUE))
+
+#no hits
+Bank_Gold<- filter(raw.goldstandard, grepl("Bank", Note, useBytes = TRUE))
+Bank_Gold2<- filter(raw.goldstandard, grepl("America", Note, useBytes = TRUE))
+Bank_Gold3<- filter(raw.goldstandard, grepl("Bank of America", Note, useBytes = TRUE))
+ Bank_Gold4<- filter(raw.goldstandard, grepl("Merrill", Note, useBytes = TRUE))
+
+#no hits
+Bank_VCS <- filter(raw.VCS_verra, grepl("Bank", Proponent))
+Bank_VCS2 <- filter(raw.VCS_verra, grepl("America", Proponent))
+Bank_VCS3 <- filter(raw.VCS_verra, grepl("Bank of America", Proponent))
+Bank_VCS4 <- filter(raw.VCS_verra, grepl("Merrill", Proponent))
+
+#output
+Bank_ACR4_out <- filter(raw.acr.df, grepl("Bank of America", Retirement.Reason.Details, useBytes = TRUE)) %>% 
+  select(Status.Effective, Account.Holder, Quantity.of.Credits, Retirement.Reason.Details, Project.Name, Project.Site.Location, Project.Type)
+
+```
+
+```{r CitiGroup}
+# no indication they even use offsets. okay results. 
+
+#no hits
+Citi_ACR <- filter(raw.acr.df, grepl("Citi", Retirement.Reason.Details, useBytes = TRUE))
+#no hits
+Citi_CAR <- filter(raw.climateactionreserve.df, grepl("Citi", Retirement.Reason.Details, useBytes = TRUE))
+#no hits
+Citi_Gold <- filter(raw.goldstandard, grepl("Citi", Note, useBytes = TRUE))
+#no hits
+Citi_VCS <- filter(raw.VCS_verra, grepl("Citi", Proponent))
+
+```
+
+```{r Wells Fargo}
+#no hits
+Wells_ACR <- filter(raw.acr.df, grepl("Wells", Retirement.Reason.Details, useBytes = TRUE))
+Wells_ACR2 <- filter(raw.acr.df, grepl("Fargo", Retirement.Reason.Details, useBytes = TRUE))
+# HITTTTTT
+Wells_CAR <- filter(raw.climateactionreserve.df, grepl("Wells", Retirement.Reason.Details, useBytes = TRUE))
+Wells_CAR2 <- filter(raw.climateactionreserve.df, grepl("Fargo", Retirement.Reason.Details, useBytes = TRUE))
+
+#No hits
+Wells_Gold <- filter(raw.goldstandard, grepl("Wells", Note, useBytes = TRUE))  
+Wells_Gold2 <- filter(raw.goldstandard, grepl("Fargo", Note, useBytes = TRUE))  
+#No hits
+Wells_filter2 <- filter(raw.VCS_verra, grepl("Wells", Proponent))
+Wells_filter2_2 <- filter(raw.VCS_verra, grepl("Fargo", Proponent))
+
+```
+
+```{r goldman}
+# ~ 160,000 carbon offsets
+
+#no hits
+Goldman_ACR <- filter(raw.acr.df, grepl("Goldman", Retirement.Reason.Details, useBytes = TRUE))
+#no hits
+Goldman_CAR <- filter(raw.climateactionreserve.df, grepl("Goldman", Retirement.Reason.Details, useBytes = TRUE))
+#no hits
+Goldman_Gold <- filter(raw.goldstandard, grepl("Goldman", Note, useBytes = TRUE))
+#no hits
+Goldman_VCS <- filter(raw.VCS_verra, grepl("Goldman", Proponent))
+``` 
+
+```{r State St}
+# definitely need to expand search terms
+
+StateSt_ACR <- filter(raw.acr.df, grepl("State St", Retirement.Reason.Details, useBytes = TRUE))
+StateSt_CAR <- filter(raw.climateactionreserve.df, grepl("State St", Retirement.Reason.Details, useBytes = TRUE))
+StateSt_Gold <- filter(raw.goldstandard, grepl("State St", Note, useBytes = TRUE))
+StateSt_filter2 <- filter(raw.VCS_verra, grepl("State St", Proponent))
+```
+
+```{r Morgan Stanley}
+#
+MorganStanley_ACR <- filter(raw.acr.df, grepl("Stanley", Retirement.Reason.Details, useBytes = TRUE))
+#
+MorganStanley_CAR <- filter(raw.climateactionreserve.df, grepl("Stanley", Retirement.Reason.Details, useBytes = TRUE))
+#
+MorganStanley_Gold <- filter(raw.goldstandard, grepl("Stanley", Note, useBytes = TRUE))
+#
+MorganStanley_filter2 <- filter(raw.VCS_verra, grepl("Stanley", Proponent))
+```
+
+```{r Mellon }
+#
+Mellon_ACR <- filter(raw.acr.df, grepl("Mellon", Retirement.Reason.Details, useBytes = TRUE))
+#
+Mellon_CAR <- filter(raw.climateactionreserve.df, grepl("Mellon", Retirement.Reason.Details, useBytes = TRUE))
+#
+Mellon_Gold <- filter(raw.goldstandard, grepl("Mellon", Note, useBytes = TRUE))
+#
+Mellon_VCS <- filter(raw.VCS_verra, grepl("Mellon", Proponent))
+```
+
+```{r ACR   DONE }
 JPMorgan_ACR <- filter(raw.acr.df, grepl("JPMorgan", Retirement.Reason.Details, useBytes = TRUE))
 Bank_ACR <- filter(raw.acr.df, grepl("Bank", Retirement.Reason.Details, useBytes = TRUE))
 Citi_ACR <- filter(raw.acr.df, grepl("Citi", Retirement.Reason.Details, useBytes = TRUE))
@@ -47,8 +199,101 @@ Mellon_ACR <- filter(raw.acr.df, grepl("Mellon", Retirement.Reason.Details, useB
 
 banks_ACR_all <- rbind(JPMorgan_ACR, Bank_ACR, Citi_ACR, Wells_ACR, Goldman_ACR, StateSt_ACR, MorganStanley_ACR, Mellon_ACR)
 
-
 ``` 
+```{r experimenting with web scraping}
+#Create our scraping function
+scrape.it <- function(the_year, the_facility){
+  
+  #Retrieve the website contents https://www.cdp.net/en/formatted_responses/responses?campaign_id=70692136&discloser_id=853003&locale=en&organization_name=Wells+Fargo+%26+Company&organization_number=20575&program=Investor&project_year=2020&redirect=https%3A%2F%2Fcdp.credit360.com%2Fsurveys%2F6sc15v4h%2F86609&survey_id=68887525
+
+#https://www.cdp.net/en/formatted_responses/responses?campaign_id=66216852&discloser_id=832727&locale=en&organization_name=Wells+Fargo+%26+Company&organization_number=20575&program=Investor&project_year=2019
+  
+#https://www.cdp.net/en/formatted_responses/responses?campaign_id=70692136&discloser_id=853003&locale=en&organization_name=Wells+Fargo+%26+Company&organization_number=20575&program=Investor&project_year=2019&redirect=https%3A%2F%2Fcdp.credit360.com%2Fsurveys%2F6sc15v4h%2F86609&survey_id=68887525
+
+  the_website <- read_html(paste0('https://www.ncwater.org/WUDC/app/WWATR/report/view/', 
+                                  the_facility, '/', the_year))
+  
+  #Set the element address variables (determined in the previous step)
+  the_registrant_tag <- '.table tr:nth-child(1) td:nth-child(2)'
+  the_facility_name_tag <- 'tr:nth-child(2) th+ .left:nth-child(2)'
+  the_facility_id_tag <- 'tr:nth-child(2) .left~ .left+ td.left'
+  the_data_tag <- '.table:nth-child(7) td:nth-child(7) , .table:nth-child(7) td:nth-child(3)'
+  
+  #Scrape the data items
+  the_registrant <- the_website %>% html_nodes(the_registrant_tag) %>% html_text()
+  the_facility_name <- the_website %>%   html_nodes(the_facility_name_tag) %>%  html_text()
+  the_facility_type <- the_website %>% html_nodes(the_facility_id_tag) %>% html_text()
+  avg_withdrawals <- the_website %>% html_nodes(the_data_tag) %>% html_text()
+  
+  #Convert to a dataframe
+  df_withdrawals <- data.frame("Month" = rep(1:12),
+                               "Year" = rep(the_year,12),
+                               "Avg_Withdrawals_mgd" = as.numeric(avg_withdrawals)) %>% 
+    mutate(Registrant = !!the_registrant,
+           Facility_name = !!the_facility_name,
+           Facility_type = !!the_facility_type,
+           Date = my(paste(Month,"-",Year)))
+  
+  #Pause for a moment - scraping etiquette
+  #Sys.sleep(1) #uncomment this if you are doing bulk scraping!
+  
+  #Return the dataframe
+  return(df_withdrawals)
+}
+
+#2020 JPM
+# (C6.3) What were your organization’s gross global Scope 2 emissions in metric tons CO2e?
+#formatted_responses_answer_431626253408725 .ndp_formatted_response__value
+
+#2020:
+#https://www.cdp.net/en/formatted_responses/responses?campaign_id=70692136&discloser_id=854607&locale=en&organization_name=JPMorgan+Chase+%26+Co.&organization_number=9871&program=Investor&project_year=2020&redirect=https%3A%2F%2Fcdp.credit360.com%2Fsurveys%2F6sc15v4h%2F91686&survey_id=68887525
+.ndp_formatted_response__header+ .ndp_formatted_response__question .ndp_formatted_response__question+ .ndp_formatted_response__question span
+#2019
+#https://www.cdp.net/en/formatted_responses/responses?campaign_id=66216852&discloser_id=822113&locale=en&organization_name=JPMorgan+Chase+%26+Co.&organization_number=9871&program=Investor&project_year=2019&redirect=https%3A%2F%2Fcdp.credit360.com%2Fsurveys%2F2019%2F9hz110bc%2F42123&survey_id=65670419
+.ndp_formatted_response__header+ .ndp_formatted_response__question .ndp_formatted_response__question+ .ndp_formatted_response__question span
+
+#2018
+#https://www.cdp.net/en/formatted_responses/responses?campaign_id=62255737&discloser_id=788956&locale=en&organization_name=JPMorgan+Chase+%26+Co.&organization_number=9871&program=Investor&project_year=2018&redirect=https%3A%2F%2Fcdp.credit360.com%2Fsurveys%2Fft9rgfbw%2F21782&survey_id=58150509
+.ndp_formatted_response__header+ .ndp_formatted_response__question .ndp_formatted_response__answer~ .ndp_formatted_response__question+ .ndp_formatted_response__question span
+
+
+
+https://www.cdp.net/en/formatted_responses/responses?campaign_id=70692136&discloser_id=854607&locale=en&organization_name=JPMorgan+Chase+%26+Co.&organization_number=9871&program=Investor&project_year=2020&redirect=https%3A%2F%2Fcdp.credit360.com%2Fsurveys%2F6sc15v4h%2F91686&survey_id=68887525
+
+
+
+
+
+
+#from WF 2020 CDP report, Section C10 
+
+#formatted_responses_repeater_2579_0 .ndp_formatted_response__header
+#formatted_responses_repeater_2579_0 div
+
+#formatted_responses_repeater_2579_1 .ndp_formatted_response__header
+#formatted_responses_repeater_2579_1 div
+
+#formatted_responses_repeater_2579_2 .ndp_formatted_response__header
+#formatted_responses_repeater_2579_2 div
+
+#formatted_responses_repeater_2579_3 .ndp_formatted_response__header
+#formatted_responses_repeater_2579_3 div
+
+#formatted_responses_repeater_2579_4 .ndp_formatted_response__header
+#formatted_responses_repeater_2579_4 div
+
+#formatted_responses_repeater_2579_5 .ndp_formatted_response__header
+#formatted_responses_repeater_2579_5 div
+
+#formatted_responses_repeater_2579_6 .ndp_formatted_response__header
+#formatted_responses_repeater_2579_6 div
+
+#formatted_responses_repeater_2579_7 .ndp_formatted_response__header
+#formatted_responses_repeater_2579_7 div
+
+
+```
+
 ```{r Climate Action Reserve DONE}
 JPMorgan_CAR <- filter(raw.climateactionreserve.df, grepl("JPMorgan", Retirement.Reason.Details, useBytes = TRUE))
 Bank_CAR<- filter(raw.climateactionreserve.df, grepl("Bank", Retirement.Reason.Details, useBytes = TRUE))
@@ -87,6 +332,8 @@ Goldman_filter2 <- filter(raw.VCS_verra, grepl("Goldman", Proponent))
 StateSt_filter2 <- filter(raw.VCS_verra, grepl("State St", Proponent))
 MorganStanley_filter2 <- filter(raw.VCS_verra, grepl("Stanley", Proponent))
 Mellon_filter2 <- filter(raw.VCS_verra, grepl("Mellon", Proponent))
+Ecosec <- filter(raw.VCS_verra, grepl("Ecosecurities", Proponent))
+Ecosec2 <- filter(raw.VCS_verra, grepl("Securities", Proponent))
 
 banks_VCS_all <- rbind(JPMorgan_filter2, Bank_filter2, Citi_filter2, Wells_filter2, Goldman_filter2, StateSt_filter2, MorganStanley_filter2, Mellon_filter2)
 

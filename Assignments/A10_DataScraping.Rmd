@@ -1,6 +1,6 @@
 ---
 title: "Assignment 10: Data Scraping"
-author: "Student Name"
+author: "Max Hermanson"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -31,8 +31,9 @@ The completed exercise is due on Tuesday, April 6 at 11:59 pm.
 
 ```{r, message = FALSE}
 #1
-
-
+if(!require(pacman))
+  install.packages("pacman")
+pacman::p_load(tidyverse, rvest, lubridate)
 ```
 
 2. We will be scraping data from the NC DEQs Local Water Supply Planning website, specifically the Durham's 2019 Municipal Local Water Supply Plan (LWSP): 
@@ -45,7 +46,7 @@ Indicate this website as the as the URL to be scraped.
 
 ```{r set.the.scraping.website}
 #2
-
+durham_URL <- read_html('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2019')
 
 ```
 
@@ -63,8 +64,11 @@ In the code chunk below scrape these values into the supplied variable names.
 
 ```{r scrape.the.data}
 #3
-
-
+water_system <- durham_URL %>% html_nodes("div+ table tr:nth-child(1) td:nth-child(2)") %>% html_text()
+PSWID <- durham_URL %>% html_nodes("td tr:nth-child(1) td:nth-child(5)") %>% html_text
+ownership <- durham_URL %>% html_nodes("div+ table tr:nth-child(2) td:nth-child(4)") %>% html_text
+max_monthly_withdrawels <- durham_URL %>% html_nodes("th~ td+ td") %>% html_text
+months_ordered <- c("Jan",  "May", "Sep", "Feb", "Jun", "Oct", "Mar", "Jul", "Nov", "Apr", "Aug", "Dec")
 ```
 
 
@@ -75,7 +79,19 @@ In the code chunk below scrape these values into the supplied variable names.
 5. Plot the max daily withdrawals across the months for 2019.
 
 ```{r create.a.dataframe.from.scraped.data}
+
 #4
+
+df_assignment <- data.frame("Month" = months_ordered,
+                            "Year" = rep(2019, 12), 
+                            
+                            "MGD" = as.numeric(max_monthly_withdrawels)) %>% 
+  mutate(Ownership = !!ownership,
+         Water_system = !!water_system,
+         pswid = !!PSWID)
+  
+df_assignment
+
 
 
 
@@ -89,25 +105,84 @@ In the code chunk below scrape these values into the supplied variable names.
 
 ```{r construct.a.scraping.function}
 #6.
+#le_year <- 03-43-015
+#le_facility <- 2019
 
+scrape.it2 <- function(le_year, le_facility ){
+  
+  #Retrieve the website contents 
+  durham_URL <- read_html(paste0('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=', 
+                                  le_facility, '&year=', le_year))
+  #https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2019
+  #https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=04-07-030&year=2020
+  #Set the element address variables (determined in the previous step)
+  water_system <- durham_URL %>% html_nodes("div+ table tr:nth-child(1) td:nth-child(2)") %>% html_text()
+  PSWID <- durham_URL %>% html_nodes("td tr:nth-child(1) td:nth-child(5)") %>% html_text
+  ownership <- durham_URL %>% html_nodes("div+ table tr:nth-child(2) td:nth-child(4)") %>% html_text
+  max_monthly_withdrawels <- durham_URL %>% html_nodes("th~ td+ td") %>% html_text
+  months_ordered <- c("Jan",  "May", "Sep", "Feb", "Jun", "Oct", "Mar", "Jul", "Nov", "Apr", "Aug", "Dec")
+  
+  #Convert to a dataframe
+  df_assignment <- data.frame("Month" = months_ordered,
+                            "Year" = rep(le_year, 12), 
+                            "MGD" = as.numeric(max_monthly_withdrawels)) %>% 
+  mutate(Ownership = !!ownership,
+         Water_system = !!water_system,
+         pswid = !!PSWID,
+         Date = my(paste(Month,"-",Year)))
+  
+  #Pause for a moment - scraping etiquette
+  Sys.sleep(1) #uncomment this if you are doing bulk scraping!
+  
+  #Return the dataframe
+  return(df_assignment)
+}
+the_df <- scrape.it2('2015', '03-32-010')
+the_df$Date <- as.Date(the_df$Date, format("%Y-%m-%d"))
+the_df <- the_df[order(the_df$Date),]
+view(the_df)
 
 
 ```
+
+
 
 7. Use the function above to extract and plot max daily withdrawals for Durham for each month in 2015
 
 ```{r fetch.and.plot.Durham.2015.data}
 #7
+the_df_durham <- scrape.it2('2015', '03-32-010')
+the_df_durham$Date <- as.Date(the_df_durham$Date, format("%m-%d-%Y"))
+the_df_durham <- the_df_durham[order(the_df_durham$Date),]
+view(the_df_durham)
 
-
+#plot
+ggplot(the_df_durham,aes(x=Date,y=max_monthly_withdrawels, group =1 )) + 
+  geom_line() + 
+  geom_smooth(method="loess",se=FALSE) +
+  labs(title = paste("2015 Water usage data for", the_df_durham$Water_system),
+       subtitle = PSWID,
+       y="Withdrawal (mgd)",
+       x="Date")
 ```
 
 8. Use the function above to extract data for Asheville (PWSID = 01-11-010) in 2015. Combine this data with the Durham data collected above and create a plot that compares the Asheville to Durham's water withdrawals.
 
 ```{r fetch.and.plot.Durham.2015.data}
 #8
+the_df_asheville <- scrape.it2( '2015', '01-11-010')
+the_df_asheville$Date <- as.Date(the_df_asheville$Date, format("%m-%d-%Y"))
+the_df_asheville <- the_df_asheville[order(the_df$Date),]
+view(the_df_asheville)
 
-
+#plot
+ggplot(the_df_asheville,aes(x=Date,y=max_monthly_withdrawels, group =1 )) + 
+  geom_line() + 
+  geom_smooth(method="loess",se=FALSE) +
+  labs(title = paste("2015 Water usage data for", the_df_asheville$Water_system),
+       subtitle = PSWID,
+       y="Withdrawal (mgd)",
+       x="Date")
 ```
 
 
@@ -116,6 +191,26 @@ In the code chunk below scrape these values into the supplied variable names.
 ```{r}
 #9
 
+les_years = rep(2010:2019)
+my_facility = '01-11-010'
+
+#Use lapply to apply the scrape function
+multiple_asheville_df <- lapply(X = les_years,
+                  FUN = scrape.it2,
+                  le_facility=my_facility)
+bound_df <- bind_rows(multiple_asheville_df)
+bound_df$Date <- as.Date(bound_df$Date, format("%m-%d-%Y"))
+bound_df <- bound_df[order(bound_df$Date),]
+view(bound_df)
+
+#Plot
+ggplot(bound_df, aes(x=Date, y = max_monthly_withdrawels, group = 1 )) + 
+  geom_line() + 
+  geom_smooth(method="loess",se=FALSE) +
+  labs(title = paste("2015 Water usage data for", bound_df$Water_system),
+       subtitle = PSWID,
+       y="Withdrawal (mgd)",
+       x="Date")
 
 ```
 

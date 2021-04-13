@@ -263,7 +263,6 @@ m <- leaflet(sf_EPAair_PM_avg) %>%
     label = ~as.character(maxPM))
 
 # Show the map "m"
-m
 
 # Save the map
 library(htmlwidgets)

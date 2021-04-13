@@ -80,11 +80,13 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r read HUCs shapefile}
 #Read the shapefile into an sf dataframe named "huc8_sf"
+huc8_sf <- st_read('./Data/Spatial/NCHUC8.shp')
 
-
-
+st_crs(huc8_sf)$epsg 
+st_crs(counties_sf)$epsg 
+colnames(huc8_sf)
 #View the data as a map, colored by the acreage in each
-
+mapview(huc8_sf, zcol="ACRES")
 
 ```
 
@@ -94,7 +96,10 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r Select the Upper Neuse HUC 8}
 #Read the shapefile into an sf dataframe
+HUC8_UN_sf <- st_read('./Data/Spatial/NCHUC8.shp') %>% 
+  filter(SUBBASIN == 'Upper Neuse')
 
+mapview(huc8_sf, col.regions = 'orange')+mapview(HUC8_UN_sf)
 
 
 #Create a map
@@ -114,17 +119,19 @@ The URL '<https://raw.githubusercontent.com/ENV859/EnviroAtlasData/main/Wind_Ene
 
 ```{r}
 #Compute HUC8 wind energy
-
-
-
-
+wind_energy_huc8 <- read.csv('https://raw.githubusercontent.com/ENV859/EnviroAtlasData/main/Wind_Energy.csv', colClasses = c('HUC_12'= 'factor')) %>% 
+  mutate('HUC_8' = substr(HUC_12, 1, 8)) %>% #start at first character and grab through the 8th
+  group_by(HUC_8) %>% 
+  summarise(power=mean(kWhkm2day))
 #Join to HUC_8 features
-
+new_join <-  huc8_sf %>% 
+  left_join(wind_energy_huc8, by = NULL) %>% 
+  drop_na()
 
 
 
 #View the outputs
-
+mapview(new_join, zcol='kWhkm2day')
 
 
 ```
@@ -134,11 +141,13 @@ Aggregate the HUC_8 data on the `DWQ_Basin` attribute, computing the sum of the 
 
 ```{r Aggregate the HUC data on an attribute, saving as huc2_sf}
 #List the unique values in the DWQ_Basin field
+unique(huc8_sf$DWQ_Basin)
 
 
 
 #Summarize on DWQ Basin value
-
+huc2_sf <- huc8_sf %>% 
+  
 
 
 #Map the data
@@ -169,15 +178,21 @@ Select the counties in the "Triangle" (Chatham, Durham, Orange, and Wake). Then 
 ```{r EXERCISE: Clipping}
 #Select the Triangle counties from the sf_counties dataframe
 
+the_triangle <- counties_sf_utm %>% 
+  filter(NAME %in% c("Chatham", "Durham", "Orange", "Wake"))
 
-
-  
+mapview(the_triangle)
 #Grab the intersecting HUC_8s
-
+the_hucs <- huc8_sf_utm[the_triangle,]
+mapview(the_triangle)+
+  mapview(the_hucs)
 
 
 #Intersect the HUC_8s
+the_huc_clip <- huc2_utm %>% 
+  st_intersection(the_triangle)
 
+mapview(the_huc_clip)+mapview()+mapview() # incomplete code SLS
 
 
 
